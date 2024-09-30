@@ -1,0 +1,116 @@
+Microservicios: 
+POSITIVO
+Son independientes, escalables y distribuidos.
+ 
+Si un servicio presenta fallas se pueden resolver fallas sin afectar otros servicios.
+
+Pueden estar en distintos lenguajes
+
+Pueden ser híbridos o usar un canal de comunicación especifico como colas o rest.
+
+Cada microservicio tiene base de datos independiente para poder escalar
+
+NEGATIVO
+Son difíciles de encontrar y se puede repetir un servicio 
+
+Puede tener latencia alta 
+
+Cada microservicio es responsable de su seguridad y si falla puede vulnerar otros microservicios
+
+Rastrear una alta latencia de microservicios puede ser complicado y puede dar la impresión 
+de que la aplicación esta funcionando lento 
+
+
+TIPOS DE TRANSPORTE:
+Http, queues o colas, streams, tcp/udp.
+
+
+BUENAS PRACTICAS 
+Responsabilidad unica
+Tamaño adecuado
+independencia 
+Autonomía 
+Comunicación asíncrona 
+Escalamiento independiente
+Despliegues independientes
+Tolerancia a errores
+Recuperación automática
+Seguridad independiente 
+Autenticación autorización y cifrado
+Evitar acoplamiento excesivo 
+Evitar dependencia entre microservicios
+
+
+
+
+
+Monolito: 
+NEGATIVO
+Aplicación que tiene todo el código un mismo sistema.
+
+todos los servicios en un mismo servicio y conectados entre si.
+
+No se hace una petición http, TCP para afuera a menos que tenga una integración con otra api.
+
+Cuando hay un problema en algún servicio se corrige y se redespliega
+todo el sistema incluyendo los servicios que no estaban fallando.
+
+Si un servicio recibe mucho estrés no se puede escalar solo 1 servicio,
+se escala todo el monolito
+
+Unos servicios crecen mas que otros
+Puede ser difícil de ejecutar localmente cuando crece mucho 
+
+POSITIVOS
+Comunicación entre servicios no tiene latencia
+
+Se puede montar todo en una maquina o contenedor 
+------------------------------------------------------------------------------------------------------------------------------
+
+Logger se utiliza para mostrar datos en la consola con el formato que lo hace nest 
+const logger = new Logger("name")
+
+CONFIG
+Interface del .env
+Schema de joi.object()
+schema.validate()
+Validar si el schema tiene errores
+Se declara envValidVars del tipo de la interface se iguala al value del schema.validate()
+Se exportan todas las variables del .env
+
+
+GATEWAY 
+Punto de entrada de la aplicación, es un API REST normal y se conecta al servidor NATS.
+
+PAQUETES NPM
+@nestjs/microservices
+class/transformer
+class/validator
+joi
+dotenv
+nats
+
+TRANSPORT NATS
+Para conectar a un servidor NATS se crea el modulo y se configura ClientsModule({name, transport, options})
+En el controller se debe inyectar ClientProxy con el nombre del ClientModuleen los servicios se usa para 
+mandar mensajes a otros microservicios
+
+
+
+
+MICROSERVICE
+En el main app se crea a partir de createMicroservice<MicroserviceOptions> se configura el medio de transporte y
+los servidores NATS.
+Se elimina el puerto de app.listen()
+Los métodos deben de ser "MessagePattern() en el controller y la data que se espera debe estar cargada en el 
+payload
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,108 @@
+version: '3'
+
+services:
+
+  nats-server:
+    image: nats:latest
+  
+  # auth-db:
+  #   container_name: auth-database
+  #   image: postgres:16.2
+  #   restart: always
+  #   volumes:
+  #     - ./auth-ms/postgres:/var/lib/postgresql/data
+  #   ports:
+  #     - 5435:5432
+  #   environment: 
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=123456
+  #     - POSTGRES_DB=authdb
+
+  # orders-db:
+  #   container_name: orders_database
+  #   image: postgres:16.2
+  #   restart: always
+  #   volumes:
+  #     - ./orders-ms/postgres:/var/lib/postgresql/data
+  #   ports:
+  #     - 5434:5432
+  #   environment: 
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=123456
+  #     - POSTGRES_DB=ordersdb
+
+  client-gateway:
+    build: 
+      context: ./client-gateway
+      dockerfile: dockerfile.prod
+    image: us-west4-docker.pkg.dev/store-microservices-438405/image-registry/client-gateway
+    ports:
+      - "${CLIENT_GATEWAY_PORT}:${CLIENT_GATEWAY_PORT}"
+    environment:
+      - PORT=3000
+      - NATS_SERVERS=nats://nats-server:4222
+
+  products-ms:
+    build: 
+      context: ./products-ms
+      dockerfile: dockerfile.prod
+      args:
+        - PRODUCTS_DB_URL=${PRODUCTS_DB_URL}
+    # volumes:
+    #   - ./products-ms/src:/usr/src/app/src
+    # command: npm run start:dev
+    image: us-west4-docker.pkg.dev/store-microservices-438405/image-registry/products-ms
+    environment:
+      - PORT=3001
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=${PRODUCTS_DB_URL}
+
+  orders-ms:
+    build: 
+      context: ./orders-ms
+      dockerfile: dockerfile.prod
+      args:
+        - STORE_DATABASE_URL=${DATA_BASE_URL}
+    # volumes:
+    #   - ./orders-ms/src:/usr/src/app/src
+    # command: npm run start:dev
+    image: us-west4-docker.pkg.dev/store-microservices-438405/image-registry/orders-ms
+    environment:
+      - PORT=3002
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=${DATA_BASE_URL}
+
+  payments-ms:
+    build: 
+      context: ./payments-ms
+      dockerfile: dockerfile.prod
+    # volumes:
+    #   - ./payments-ms/src:/usr/src/app/src
+    # command: npm run start:dev
+    ports:
+      - ${PAYMENTS_MS_PORT}:${PAYMENTS_MS_PORT}
+    image: us-west4-docker.pkg.dev/store-microservices-438405/image-registry/payments-ms
+    environment:
+      - PORT=${PAYMENTS_MS_PORT}
+      - STRIPE_SECRET=${STRIPE_SECRET}
+      - SUCCESS_URL=${SUCCESS_URL}
+      - CANCEL_URL=${CANCEL_URL}
+      - STRIPE_ENDPOINTSECRET=${STRIPE_ENDPOINTSECRET}
+      - NATS_SERVERS=nats://nats-server:4222
+
+  auth-ms:
+    build: 
+      context: ./auth-ms
+      dockerfile: dockerfile.prod
+      args:
+        - AUTH_DB_URL=${AUTH_DB_URL}
+    image: us-west4-docker.pkg.dev/store-microservices-438405/image-registry/auth-ms
+    environment:
+      - PORT=3004
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=${AUTH_DB_URL}
+      - JWT_SECRET=Esaodebeserunapalabra
+
+
+
+  
